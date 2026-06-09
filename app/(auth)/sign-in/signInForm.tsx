@@ -3,54 +3,49 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";  
+import { useRouter } from "next/navigation";
 import { userSchema, UserSchema } from "@/app/lib/validators/userSchema";
 import { FormField } from "@/app/components/ui/FormField";
-import { getuser } from "@/app/lib/api";
+import { loginUser } from "@/app/lib/api";
 
+const loginSchema = userSchema.pick({
+  email: true,
+  password: true,
+});
+
+type LoginSchema = Pick<UserSchema, "email" | "password">;
 
 const signInForm = () => {
   const router = useRouter();
-  const {
-    register,
-    handleSubmit,
-    formState
-  } = useForm<UserSchema>({
-    resolver: zodResolver(userSchema),
+  const { register, handleSubmit, formState } = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
   });
 
   const mutation = useMutation({
-    mutationFn: getuser,
-    onSuccess: () => {  
+    mutationFn: (user: LoginSchema) => loginUser(user),
+    onSuccess: () => {
       router.push("/pages/dashboard");
     },
     onError: (error) => {
       console.error("Login failed", error);
-    },  
+    },
   });
 
-  const onSubmit = (data: UserSchema) => {
-    mutation.mutate();
+  const onSubmit = (data: LoginSchema) => {
+    mutation.mutate(data);
   };
 
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormField<UserSchema>
-          label="Name"
-          name="name"
-          placeholder="Enter your name"
-          register={register}
-          errors={formState.errors}
-        />    
-        <FormField<UserSchema>
+        <FormField<LoginSchema>
           label="Email"
-          name="email"  
+          name="email"
           placeholder="Enter your email"
           register={register}
           errors={formState.errors}
         />
-        <FormField<UserSchema>
+        <FormField<LoginSchema>
           label="Password"
           name="password"
           placeholder="Enter your password"
@@ -64,9 +59,13 @@ const signInForm = () => {
         >
           Sign In
         </button>
+        {mutation.isPending && <p>Logging in...</p>}
+        {mutation.isSuccess && <p>{mutation.data.message}</p>}
+        {mutation.isError && <p>Login failed: {mutation.error.message}</p>}
       </form>
+      
     </div>
-  )
-}
+  );
+};
 
-export default signInForm
+export default signInForm;

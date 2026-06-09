@@ -64,8 +64,8 @@ const SignUpForm = () => {
       <button type="submit">Sign Up</button>
 
       {mutation.isPending && <p>Submitting...</p>}
-      {mutation.isSuccess && <p>Success!</p>}
-      {mutation.isError && <p>Error!</p>}
+      {mutation.isSuccess && <p>{mutation.data.message}</p>}
+      {mutation.isError && <p>{mutation.error.message}</p>}
     </form>
   );
 };

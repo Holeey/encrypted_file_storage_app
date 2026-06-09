@@ -3,6 +3,11 @@
 import { Search, Upload, Shield } from "lucide-react";
 
 export default function Topbar() {
+
+  const onclickUpload = () => {
+   console.log("Upload button clicked");
+  };
+
   return (
     <header className="h-16 bg-[#020617] border-b border-gray-800 flex items-center justify-between px-6">
       
@@ -28,7 +33,7 @@ export default function Topbar() {
         </div>
 
         {/* Upload Button */}
-        <button className="flex items-center gap-2 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium">
+        <button onClick={onclickUpload} className="flex items-center gap-2 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium">
           <Upload size={16} />
           Upload
         </button>

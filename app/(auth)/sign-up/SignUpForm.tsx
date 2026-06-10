@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { userSchema, UserSchema } from "@/app/lib/validators/userSchema";
-import { createUser } from "@/app/lib/api";
+import { registerUser } from "@/app/lib/api";
 import { FormField } from "@/app/components/ui/FormField";
 
 const SignUpForm = () => {
@@ -21,7 +21,7 @@ const SignUpForm = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: createUser,
+    mutationFn: registerUser,
     onSuccess: () => {
       router.push("/sign-in");
     },

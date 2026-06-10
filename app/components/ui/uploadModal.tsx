@@ -1,55 +1,59 @@
 "use client";
 
-import React, { useState } from "react";
+import { useRef, useState } from "react";
+import type { ChangeEvent, SyntheticEvent } from "react";
+import { uploadFile } from "../../lib/api";
 
 export default function UploadModal() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFile(e.target.files ? e.target.files[0] : null);
+  };
+
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!file) return setStatus("Please select a file first");
-    setLoading(true);
-    setStatus(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/files/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Upload failed");
-
-      setStatus(`Uploaded: ${data.filename} (${data.size} bytes)`);
-      setFile(null);
-      (document.getElementById("file-input") as HTMLInputElement | null)?.value &&
-        ((document.getElementById("file-input") as HTMLInputElement).value = "");
-    } catch (err: any) {
-      setStatus(err.message || "Upload error");
-    } finally {
-      setLoading(false);
+    if (file) {
+      setLoading(true);
+      try {
+        await uploadFile({file});
+        setStatus(`File "${file.name}" uploaded successfully!`);
+      } catch {
+        setStatus( `Upload failed for "${file.name}". Please try again.`);
+      } finally {
+        resetForm();
+      }
     }
-  }
+  };
+
+  const resetForm = () => {
+    setFile(null);
+    setStatus(null);
+    setLoading(false);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+  };
 
   return (
     <form onSubmit={handleSubmit} 
-    className="space-y-2 p-4 
-    border rounded
-     bg-gray-800
-        height-50%
-        width-50%
-        transform-translate-x-1/2 transform-translate-y-1/2
+    className="
+    space-y-2 p-4 border rounded bg-gray-800
+    w-1/2
+    fixed top-1/2 left-1/2
+    -translate-x-1/2 -translate-y-1/2
+
         ">
       <div className="bg-red-500 border-solid border-2 border-white rounded p-2">
         <input
+          ref={fileInputRef}
           id="file-input"
           type="file"
-          onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+          onChange={handleFileChange}
         />
       </div>
 
